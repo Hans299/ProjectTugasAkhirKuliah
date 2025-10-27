@@ -44,14 +44,14 @@
         
         {{-- Memasukkan Sidebar Biru --}}
         <div class="sidebar-wrapper">
-            @include('partials.admin._sidebar')
+            @include('partials.admin.sidebar')
         </div>
         
         {{-- Wrapper untuk Konten Utama (Navbar + Halaman) --}}
         <div class="main-content-wrapper">
             
             {{-- Memasukkan Navbar Atas --}}
-            @include('partials.admin._navbar')
+            @include('partials.admin.navbar')
 
             {{-- Area Konten Utama --}}
             <main class="content-area">

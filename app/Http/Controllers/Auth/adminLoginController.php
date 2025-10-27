@@ -14,7 +14,7 @@ class AdminLoginController extends Controller
     public function showLoginForm()
     {
         // Arahkan ke file blade login admin (desain biru)
-        return view('auth.admin-login'); 
+        return view('auth.admin_login'); 
     }
 
     /**

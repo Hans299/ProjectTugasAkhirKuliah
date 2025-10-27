@@ -18,8 +18,7 @@
                     {{-- Ganti dengan foto profil --}}
                     <i class="fa fa-user-circle fa-2x text-primary me-2"></i>
                     <div>
-                        <span class="fw-bold d-block">{{ Auth::user()->name ?? 'Hans Bonatua' }}</span>
-                        <small class="text-muted">{{ Auth::user()->role ?? 'Laboran' }}</small>
+                        <span class="fw-bold d-block">{{ Auth::user()->name }}</span>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">

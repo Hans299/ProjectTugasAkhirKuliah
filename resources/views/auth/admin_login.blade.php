@@ -131,7 +131,7 @@
         {{-- BAGIAN KIRI: ILUSTRASI --}}
         <div class="login-illustration">
             {{-- Ganti 'src' dengan path ke gambar ilustrasi Anda --}}
-            <img src="httpsstatic/images/your-illustration.svg" alt="Login Illustration">
+            <img src="https://storyset.com/illustration/programming/rafiki" alt="Login Illustration">
         </div>
 
         {{-- BAGIAN KANAN: FORM --}}
@@ -158,7 +158,7 @@
               PENTING: 'action' dari form ini harus diarahkan ke route login admin,
               bukan route login siswa.
             --}}
-            <form action="{{ route('admin.login.store') }}" method="POST"> {{-- (Contoh nama route) --}}
+            <form action="{{ route('admin.login') }}" method="POST">
                 @csrf
                 
                 <div class="form-group">
