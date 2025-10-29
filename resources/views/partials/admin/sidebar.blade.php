@@ -19,47 +19,53 @@
         {{-- ========================================================== --}}
         {{-- ================== MENU UNTUK SUPERADMIN ================= --}}
         {{-- ========================================================== --}}
-        @if(Auth::user()->role == 'superadmin')
+        {{-- 
+            CATATAN: 
+            Nama rute 'dasbor' Anda telah diubah menjadi 'dashboard'.
+            Rute 'admins' dan 'pengguna' telah digabung menjadi 'users' (sesuai UserController kita).
+        --}}
+        @if(Auth::user()->role->name == 'superadmin')
             <li class="nav-item mb-2">
-                <a href="{{ route('superadmin.dasbor') }}" class="nav-link nav-admin {{ Request::is('superadmin/dasbor*') ? 'active' : '' }}">
+                <a href="{{ route('admin.superadmin.dashboard') }}" class="nav-link nav-admin {{ Request::is('admin/superadmin/dashboard*') ? 'active' : '' }}">
                     <i class="fa fa-th-large me-2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('superadmin.admins.index') }}" class="nav-link nav-admin {{ Request::is('superadmin/admins*') ? 'active' : '' }}">
-                    <i class="fa fa-user-shield me-2"></i> Kelola Akun Admin
+                {{-- Ini adalah link dari Tahap 6 (Kelola Akun) --}}
+                <a href="{{ route('admin.superadmin.users.index') }}" class="nav-link nav-admin {{ Request::is('admin/superadmin/users*') ? 'active' : '' }}">
+                    <i class="fa fa-users me-2"></i> Kelola Akun
                 </a>
             </li>
+            
+            {{-- Superadmin juga bisa melihat item (opsional) --}}
             <li class="nav-item mb-2">
-                <a href="{{ route('superadmin.pengguna.index') }}" class="nav-link nav-admin {{ Request::is('superadmin/pengguna*') ? 'active' : '' }}">
-                    <i class="fa fa-users me-2"></i> Kelola Akun User
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a href="{{ route('pustakawan.buku.index') }}" class="nav-link nav-admin {{ Request::is('pustakawan/buku*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pustakawan.buku.index') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/buku*') ? 'active' : '' }}">
                     <i class="fa fa-book me-2"></i> Perpustakaan
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('laboran.alat.index') }}" class="nav-link nav-admin {{ Request::is('laboran/alat*') ? 'active' : '' }}">
-                    <i class="fa fa-flask me-2"></i> Labotarium
+                <a href="{{ route('admin.laboran.alat.index') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/alat*') ? 'active' : '' }}">
+                    <i class="fa fa-flask me-2"></i> Laboratorium
                 </a>
             </li>
-            {{-- Transaksi Dropdown untuk Superadmin --}}
+            
+            {{-- Transaksi Dropdown untuk Superadmin (Rute 'transaksi' belum dibuat) --}}
             <li class="nav-item mb-2">
-                <a href="#transaksiSubmenu" data-bs-toggle="collapse" class="nav-link nav-admin d-flex justify-content-between align-items-center {{ (Request::is('pustakawan/transaksi*') || Request::is('laboran/transaksi*')) ? 'active' : '' }}">
+                <a href="#transaksiSubmenu" data-bs-toggle="collapse" class="nav-link nav-admin d-flex justify-content-between align-items-center {{ (Request::is('admin/pustakawan/transaksi*') || Request::is('admin/laboran/transaksi*')) ? 'active' : '' }}">
                     <span><i class="fa fa-exchange-alt me-2"></i> Transaksi</span>
                     <i class="fa fa-chevron-down small"></i>
                 </a>
-                <ul class="collapse list-unstyled ps-4 {{ (Request::is('pustakawan/transaksi*') || Request::is('laboran/transaksi*')) ? 'show' : '' }}" id="transaksiSubmenu">
+                <ul class="collapse list-unstyled ps-4 {{ (Request::is('admin/pustakawan/transaksi*') || Request::is('admin/laboran/transaksi*')) ? 'show' : '' }}" id="transaksiSubmenu">
                     <li class="nav-item mb-1 mt-2">
-                        <a href="{{ route('pustakawan.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('pustakawan/transaksi*') ? 'active-sub' : '' }}">
-                            Perpustakaan
+                        {{-- <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/pustakawan/transaksi*') ? 'active-sub' : '' }}"> --}}
+                        <a href="#" class="nav-link nav-admin-sub">
+                            Perpustakaan (TBD)
                         </a>
                     </li>
                     <li class="nav-item mb-1">
-                        <a href="{{ route('laboran.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('laboran/transaksi*') ? 'active-sub' : '' }}">
-                            Labotarium
+                        {{-- <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/laboran/transaksi*') ? 'active-sub' : '' }}"> --}}
+                        <a href="#" class="nav-link nav-admin-sub">
+                            Laboratorium (TBD)
                         </a>
                     </li>
                 </ul>
@@ -68,47 +74,51 @@
         {{-- ========================================================== --}}
         {{-- ================== MENU UNTUK PUSTAKAWAN ================= --}}
         {{-- ========================================================== --}}
-        @elseif(Auth::user()->role == 'pustakawan')
+        @elseif(Auth::user()->role->name == 'pustakawan')
             <li class="nav-item mb-2">
-                <a href="{{ route('pustakawan.dasbor') }}" class="nav-link nav-admin {{ Request::is('pustakawan/dasbor*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pustakawan.dashboard') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/dashboard*') ? 'active' : '' }}">
                     <i class="fa fa-th-large me-2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('pustakawan.buku.index') }}" class="nav-link nav-admin {{ Request::is('pustakawan/buku*') ? 'active' : '' }}">
-                    <i class="fa fa-book me-2"></i> Perpustakaan
+                {{-- Ini adalah link dari Tahap 7 (Kelola Buku) --}}
+                <a href="{{ route('admin.pustakawan.buku.index') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/buku*') ? 'active' : '' }}">
+                    <i class="fa fa-book me-2"></i> Kelola Buku
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('pustakawan.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('pustakawan/transaksi*') || Request::is('pustakawan/laporan*') ? 'active' : '' }}">
-                    <i class="fa fa-exchange-alt me-2"></i> Transaksi Perpustakaan
+                {{-- <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/transaksi*') || Request::is('admin/pustakawan/laporan*') ? 'active' : '' }}"> --}}
+                <a href="#" class="nav-link nav-admin">
+                    <i class="fa fa-exchange-alt me-2"></i> Transaksi (TBD)
                 </a>
             </li>
 
         {{-- ========================================================== --}}
         {{-- =================== MENU UNTUK LABORAN =================== --}}
         {{-- ========================================================== --}}
-        @elseif(Auth::user()->role == 'laboran')
+        @elseif(Auth::user()->role->name == 'laboran')
             <li class="nav-item mb-2">
-                <a href="{{ route('laboran.dasbor') }}" class="nav-link nav-admin {{ Request::is('laboran/dasbor*') ? 'active' : '' }}">
+                <a href="{{ route('admin.laboran.dashboard') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/dashboard*') ? 'active' : '' }}">
                     <i class="fa fa-th-large me-2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('laboran.alat.index') }}" class="nav-link nav-admin {{ Request::is('laboran/alat*') ? 'active' : '' }}">
-                    <i class="fa fa-flask me-2"></i> Labotarium
+                {{-- Ini adalah link dari Tahap 7 (Kelola Alat) --}}
+                <a href="{{ route('admin.laboran.alat.index') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/alat*') ? 'active' : '' }}">
+                    <i class="fa fa-flask me-2"></i> Kelola Alat
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('laboran.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('laboran/transaksi*') || Request::is('laboran/laporan*') ? 'active' : '' }}">
-                    <i class="fa fa-exchange-alt me-2"></i> Transaksi Labotarium
+                {{-- <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/transaksi*') || Request::is('admin/laboran/laporan*') ? 'active' : '' }}"> --}}
+                <a href="#" class="nav-link nav-admin">
+                    <i class="fa fa-exchange-alt me-2"></i> Transaksi (TBD)
                 </a>
             </li>
         
         @endif
     </ul>
     
-    {{-- Tombol Logout di Bawah --}}
+    {{-- Tombol Logout di Bawah (Rute 'logout' SUDAH BENAR) --}}
     <hr style="border-color: rgba(255, 255, 255, 0.3);">
     <div>
         <form action="{{ route('logout') }}" method="POST">
@@ -121,7 +131,7 @@
     </div>
 </div>
 
-{{-- CSS untuk Nav Link --}}
+{{-- CSS untuk Nav Link (Biarkan apa adanya) --}}
 <style>
     .nav-admin {
         color: #FFFFFF;

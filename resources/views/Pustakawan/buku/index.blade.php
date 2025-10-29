@@ -67,6 +67,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 8px;
+        margin: 0 2px;
     }
     /* Tombol Tambah (Biru muda) */
     .btn-tambah {
@@ -86,8 +87,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="page-title">Perpustakaan</h2>
         <div>
-            {{-- Tombol Tambah mengarah ke route 'create' --}}
-            <a href="{{ route('pustakawan.buku.create') }}" class="btn btn-tambah">
+            {{-- Tombol Tambah mengarah ke route 'create' (DIPERBAIKI) --}}
+            <a href="{{ route('admin.pustakawan.buku.create') }}" class="btn btn-tambah">
                 <i class="fa fa-plus me-2"></i> Tambah
             </a>
         </div>
@@ -104,73 +105,71 @@
             </div>
         </div>
 
+        {{-- Menampilkan pesan sukses (DITAMBAHKAN) --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         {{-- Tabel Data Buku --}}
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
+                        {{-- Kolom disesuaikan dengan Controller (DIPERBAIKI) --}}
                         <th scope="col" style="text-align: left;">Judul Buku</th>
-                        <th scope="col">ISBN</th>
+                        <th scope="col">Pengarang</th>
                         <th scope="col">Penerbit</th>
-                        <th scope="col">Tahun Terbit</th>
-                        <th scope="col">Stok Buku</th>
+                        <th scope="col">Stok</th>
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- 
-                      Ganti bagian ini dengan loop data dari Controller
-                      @forelse($daftarBuku as $buku) 
-                    --}}
-                    @for ($i = 0; $i < 5; $i++)
+                    {{-- Loop data dinamis (DIPERBAIKI) --}}
+                    @forelse($bukus as $buku)
                     <tr>
-                        <td style="text-align: left;">Loneliness is my best friend</td>
-                        <td>978-3-16-148410-0</td>
-                        <td>Media Nusantara</td>
-                        <td>2018</td>
-                        <td>10</td>
+                        <td style="text-align: left;">{{ $buku->judul }}</td>
+                        <td>{{ $buku->pengarang }}</td>
+                        <td>{{ $buku->penerbit ?? '-' }}</td>
+                        <td>{{ $buku->stok }}</td>
                         <td class="action-buttons">
-                            {{-- Tombol Edit --}}
-                            <a href="#" class="btn btn-warning text-white"> {{-- route('pustakawan.buku.edit', $buku->id) --}}
+                            
+                            {{-- Tombol Edit (Langkah 45) --}}
+                            <a href="{{ route('admin.pustakawan.buku.edit', $buku->id) }}" class="btn btn-warning text-white">
                                 <i class="fa fa-pencil-alt"></i>
                             </a>
                             
-                            {{-- Tombol Hapus (gunakan form) --}}
-                            <form action="#" method="POST" class="d-inline"> {{-- route('pustakawan.buku.destroy', $buku->id) --}}
+                            {{-- Tombol Hapus (Langkah 45) --}}
+                            <form action="{{ route('admin.pustakawan.buku.destroy', $buku->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus buku ini?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus buku ini?')">
+                                <button type="submit" class="btn btn-danger">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </form>
                             
-                            {{-- Tombol Lihat/Show --}}
-                            <a href="#" class="btn btn-info text-white"> {{-- route('pustakawan.buku.show', $buku->id) --}}
+                            {{-- Tombol Lihat/Show (Opsional, arahkan ke edit) --}}
+                            <a href="{{ route('admin.pustakawan.buku.edit', $buku->id) }}" class="btn btn-info text-white">
                                 <i class="fa fa-eye"></i>
                             </a>
                         </td>
                     </tr>
-                    @endfor
-                    {{-- @empty --}}
-                    {{-- <tr><td colspan="6" class="text-center">Belum ada data buku.</td></tr> --}}
-                    {{-- @endforelse --}}
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center">Belum ada data buku.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
-        {{-- Pagination --}}
-        <nav aria-label="Page navigation" class="d-flex justify-content-end mt-3">
-            <ul class="pagination">
-                <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                <li class="page-item"><a class="page-link" href="#">5</a></li>
-                <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
-            </ul>
-        </nav>
-        {{-- Ganti pagination statis di atas dengan: $daftarBuku->links() --}}
+        {{-- Pagination (DIPERBAIKI) --}}
+        <div class="d-flex justify-content-end mt-3">
+             {{-- Ini akan berfungsi jika Anda mengganti get() -> paginate() di controller --}}
+             {{ $bukus->links() }}
+        </div>
 
     </div>
 @endsection

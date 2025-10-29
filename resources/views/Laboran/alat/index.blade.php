@@ -65,6 +65,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 8px;
+        margin: 0 2px; /* Memberi sedikit jarak antar tombol */
     }
 </style>
 @endpush
@@ -74,10 +75,10 @@
     
     {{-- Header Konten (Judul & Tombol Tambah) --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="page-title">Labotarium</h2>
+        <h2 class="page-title">Laboratorium</h2>
         <div>
-            {{-- Tombol Tambah mengarah ke route 'create' --}}
-            <a href="{{ route('laboran.alat.create') }}" class="btn btn-primary" style="background-color: #25256C; border: none; padding: 0.5rem 1rem; font-weight: 600;">
+            {{-- Tombol Tambah mengarah ke route 'create' (DIPERBAIKI) --}}
+            <a href="{{ route('admin.laboran.alat.create') }}" class="btn btn-primary" style="background-color: #25256C; border: none; padding: 0.5rem 1rem; font-weight: 600;">
                 <i class="fa fa-plus me-2"></i> Tambah
             </a>
         </div>
@@ -94,69 +95,73 @@
             </div>
         </div>
 
+        {{-- Menampilkan pesan sukses --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         {{-- Tabel Data Alat --}}
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
                         <th scope="col">Nama Alat</th>
-                        <th scope="col">ID Alat</th>
-                        <th scope="col">Kualitas</th>
-                        <th scope="col">Stok</th> {{-- Koreksi dari "Stok Buku" --}}
+                        <th scope="col">Deskripsi</th>
+                        <th scope="col">Stok</th>
                         <th scope="col">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{-- 
-                      Ganti bagian ini dengan loop data dari Controller
-                      @forelse($daftarAlat as $alat) 
+                      Looping data dinamis dari Controller ($alats)
                     --}}
-                    @for ($i = 0; $i < 5; $i++)
+                    @forelse($alats as $alat)
                     <tr>
-                        <td>Tabung Reaksi</td>
-                        <td>978-3-16-148410-0</td>
-                        <td>Baik</td>
-                        <td>10</td>
+                        <td>{{ $alat->nama }}</td>
+                        <td>{{ $alat->deskripsi ?? '-' }}</td>
+                        <td>{{ $alat->stok }}</td>
                         <td class="action-buttons">
-                            {{-- Tombol Edit --}}
-                            <a href="#" class="btn btn-warning text-white"> {{-- route('laboran.alat.edit', $alat->id) --}}
+                            {{-- Tombol Edit (DIPERBAIKI) --}}
+                            <a href="{{ route('admin.laboran.alat.edit', $alat->id) }}" class="btn btn-warning text-white">
                                 <i class="fa fa-pencil-alt"></i>
                             </a>
                             
-                            {{-- Tombol Hapus (gunakan form) --}}
-                            <form action="#" method="POST" class="d-inline"> {{-- route('laboran.alat.destroy', $alat->id) --}}
+                            {{-- Tombol Hapus (DIPERBAIKI) --}}
+                            <form action="{{ route('admin.laboran.alat.destroy', $alat->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus alat ini?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus alat ini?')">
+                                <button type="submit" class="btn btn-danger">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </form>
                             
-                            {{-- Tombol Lihat/Show --}}
-                            <a href="#" class="btn btn-info text-white"> {{-- route('laboran.alat.show', $alat->id) --}}
+                            {{-- Tombol Lihat/Show (DIPERBAIKI) --}}
+                            {{-- Kita belum buat 'show', jadi arahkan ke 'edit' untuk sementara --}}
+                            <a href="{{ route('admin.laboran.alat.edit', $alat->id) }}" class="btn btn-info text-white">
                                 <i class="fa fa-eye"></i>
                             </a>
                         </td>
                     </tr>
-                    @endfor
-                    {{-- @empty --}}
-                    {{-- <tr><td colspan="5" class="text-center">Belum ada data alat.</td></tr> --}}
-                    {{-- @endforelse --}}
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center">Belum ada data alat.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
         {{-- Pagination --}}
-        <nav aria-label="Page navigation" class="d-flex justify-content-end mt-3">
-            <ul class="pagination">
-                <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
-            </ul>
-        </nav>
-        {{-- Ganti pagination statis di atas dengan: $daftarAlat->links() --}}
+        <div class="d-flex justify-content-end mt-3">
+            {{-- 
+                Ini akan menampilkan link pagination 
+                TAPI kita perlu ubah controller agar pakai paginate() 
+            --}}
+            {{-- {{ $alats->links() }} --}}
+        </div>
 
     </div>
 @endsection
