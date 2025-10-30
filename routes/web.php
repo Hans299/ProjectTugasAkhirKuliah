@@ -1,51 +1,87 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-// Dashboard
-use App\Http\Controllers\Superadmin\DashboardController as SuperadminDash;
-use App\Http\Controllers\Pustakawan\DashboardController as PustakawanDash;
-use App\Http\Controllers\Laboran\DashboardController as LaboranDash;
+// Kontroler untuk Login Admin (Tamu)
+use App\Http\Controllers\Auth\AdminLoginController;
 
-// CRUD
-use App\Http\Controllers\Superadmin\UserController;
-use App\Http\Controllers\Pustakawan\BukuController;
-use App\Http\Controllers\Laboran\AlatLabController;
+// Kontroler untuk SISWA (BARU)
+use App\Http\Controllers\Siswa\DashboardController as SiswaDash;
+use App\Http\Controllers\Siswa\ItemController as SiswaItem;
+use App\Http\Controllers\Siswa\TransaksiController as SiswaTransaksi;
 
 /*
 |--------------------------------------------------------------------------
-| Rute Admin
+| Rute Web (Tamu & Siswa)
 |--------------------------------------------------------------------------
 |
-| File ini mengurus semua rute yang diawali dengan /admin
-| (Superadmin, Pustakawan, Laboran).
+| File ini HANYA mengurus rute publik (Tamu) dan rute
+| yang diautentikasi sebagai Siswa.
 |
 */
 
-// == Grup SUPERADMIN ==
-Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/dashboard', [SuperadminDash::class, 'index'])->name('dashboard');
+// == RUTE TAMU (Guest) ==
+
+// 1. Rute Halaman Utama (Landing Page)
+Route::get('/', function () {
+    // Arahkan ke halaman login siswa secara default
+    return redirect()->route('login');
+});
+
+// 2. Rute Login Admin (Masih Rute Tamu)
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminLoginController::class, 'login']);
+
+// 3. Rute Bawaan Laravel untuk Autentikasi SISWA
+// Ini akan otomatis membuat /login, /register, /logout untuk siswa
+Auth::routes();
+
+
+/*
+|--------------------------------------------------------------------------
+| Rute SISWA (Harus Login sebagai Siswa)
+|--------------------------------------------------------------------------
+*/
+
+// == Grup SISWA ==
+// Semua rute di sini dilindungi middleware 'auth' dan 'siswa'
+Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     
-    // CRUD Kelola Akun
-    Route::resource('users', UserController::class);
-});
+    // 1. Dashboard (Hub Utama)
+    // Nama: siswa.dashboard
+    Route::get('/dashboard', [SiswaDash::class, 'index'])->name('dashboard');
+    
+    // 2. Halaman Katalog (Daftar Item)
+    // Nama: siswa.pinjaman.buku
+    Route::get('/buku', [SiswaItem::class, 'buku'])->name('pinjaman.buku');
+    // Nama: siswa.pinjaman.alat
+    Route::get('/alat', [SiswaItem::class, 'alat'])->name('pinjaman.alat');
 
-// == Grup PUSTAKAWAN ==
-Route::middleware(['auth', 'pustakawan'])->prefix('pustakawan')->name('pustakawan.')->group(function () {
-    Route::get('/dashboard', [PustakawanDash::class, 'index'])->name('dashboard');
+    // 3. Halaman Detail Item
+    // Nama: siswa.item.show.buku
+    Route::get('/buku/{buku}', [SiswaItem::class, 'showBuku'])->name('item.show.buku');
+    // Nama: siswa.item.show.alat
+    Route::get('/alat/{alat}', [SiswaItem::class, 'showAlat'])->name('item.show.alat');
 
-    // CRUD Kelola Buku
-    Route::resource('buku', BukuController::class);
+    // 4. Halaman Riwayat Peminjaman
+    // Nama: siswa.pinjaman.riwayat
+    Route::get('/riwayat', [SiswaTransaksi::class, 'riwayat'])->name('pinjaman.riwayat');
 
-    // (Nanti rute Transaksi Pustakawan akan ditambahkan di sini)
-});
+    // 5. ALUR FORM PINJAM
+    // (A) Tampilkan Form Konfirmasi Pinjam
+    // Nama: siswa.pinjaman.create
+    Route::get('/pinjam/{item_type}/{item_id}', [SiswaTransaksi::class, 'showPinjamForm'])->name('pinjaman.create');
+    // (B) Proses Form Konfirmasi Pinjam
+    // Nama: siswa.pinjaman.store
+    Route::post('/pinjam/store', [SiswaTransaksi::class, 'storePeminjaman'])->name('pinjaman.store');
 
-// == Grup LABORAN ==
-Route::middleware(['auth', 'laboran'])->prefix('laboran')->name('laboran.')->group(function () {
-    Route::get('/dashboard', [LaboranDash::class, 'index'])->name('dashboard');
+    // 6. ALUR FORM KEMBALIKAN (DENGAN FOTO)
+    // (A) Tampilkan Form Upload Foto
+    // Nama: siswa.pinjaman.kembalikan.form
+    Route::get('/kembalikan/{transaksi}', [SiswaTransaksi::class, 'showKembaliForm'])->name('pinjaman.kembalikan.form');
+    // (B) Proses Form Upload Foto
+    // Nama: siswa.pinjaman.kembalikan.store
+    Route::post('/kembalikan/{transaksi}', [SiswaTransaksi::class, 'storePengembalian'])->name('pinjaman.kembalikan.store');
 
-    // CRUD Kelola Alat
-    Route::resource('alat', AlatLabController::class);
-
-    // (Nanti rute Transaksi Laboran akan ditambahkan di sini)
 });
