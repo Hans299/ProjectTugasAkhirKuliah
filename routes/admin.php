@@ -12,6 +12,10 @@ use App\Http\Controllers\Superadmin\UserController;
 use App\Http\Controllers\Pustakawan\BukuController;
 use App\Http\Controllers\Laboran\AlatLabController;
 
+//Transaksi
+use App\Http\Controllers\Pustakawan\TransaksiController as PustakawanTransaksi;
+use App\Http\Controllers\Laboran\TransaksiController as LaboranTransaksi;
+
 /*
 |--------------------------------------------------------------------------
 | Rute Admin
@@ -37,7 +41,12 @@ Route::middleware(['auth', 'pustakawan'])->prefix('pustakawan')->name('pustakawa
     // CRUD Kelola Buku
     Route::resource('buku', BukuController::class);
 
-    // (Nanti rute Transaksi Pustakawan akan ditambahkan di sini)
+    // Transaksi
+    Route::get('transaksi', [PustakawanTransaksi::class, 'index'])->name('transaksi.index');
+    Route::post('transaksi/{transaksi}/setujui', [PustakawanTransaksi::class, 'setujui'])->name('transaksi.setujui');
+    Route::post('transaksi/{transaksi}/tolak', [PustakawanTransaksi::class, 'tolak'])->name('transaksi.tolak');
+    Route::post('transaksi/{transaksi}/selesaikan', [PustakawanTransaksi::class, 'selesaikan'])->name('transaksi.selesaikan');
+    Route::post('transaksi/{transaksi}/gagal-kembali', [PustakawanTransaksi::class, 'gagalKembali'])->name('transaksi.gagalKembali');
 });
 
 // == Grup LABORAN ==
@@ -47,5 +56,10 @@ Route::middleware(['auth', 'laboran'])->prefix('laboran')->name('laboran.')->gro
     // CRUD Kelola Alat
     Route::resource('alat', AlatLabController::class);
 
-    // (Nanti rute Transaksi Laboran akan ditambahkan di sini)
+    // Transaksi
+    Route::get('transaksi', [LaboranTransaksi::class, 'index'])->name('transaksi.index');
+    Route::post('transaksi/{transaksi}/setujui', [LaboranTransaksi::class, 'setujui'])->name('transaksi.setujui');
+    Route::post('transaksi/{transaksi}/tolak', [LaboranTransaksi::class, 'tolak'])->name('transaksi.tolak');
+    Route::post('transaksi/{transaksi}/selesaikan', [LaboranTransaksi::class, 'selesaikan'])->name('transaksi.selesaikan');
+    Route::post('transaksi/{transaksi}/gagal-kembali', [LaboranTransaksi::class, 'gagalKembali'])->name('transaksi.gagalKembali');
 });

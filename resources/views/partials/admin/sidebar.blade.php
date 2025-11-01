@@ -57,14 +57,12 @@
                 </a>
                 <ul class="collapse list-unstyled ps-4 {{ (Request::is('admin/pustakawan/transaksi*') || Request::is('admin/laboran/transaksi*')) ? 'show' : '' }}" id="transaksiSubmenu">
                     <li class="nav-item mb-1 mt-2">
-                        {{-- <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/pustakawan/transaksi*') ? 'active-sub' : '' }}"> --}}
-                        <a href="#" class="nav-link nav-admin-sub">
+                        <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/pustakawan/transaksi*') ? 'active-sub' : '' }}">
                             Perpustakaan (TBD)
                         </a>
                     </li>
                     <li class="nav-item mb-1">
-                        {{-- <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/laboran/transaksi*') ? 'active-sub' : '' }}"> --}}
-                        <a href="#" class="nav-link nav-admin-sub">
+                        <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin-sub {{ Request::is('admin/laboran/transaksi*') ? 'active-sub' : '' }}">
                             Laboratorium (TBD)
                         </a>
                     </li>
@@ -87,9 +85,8 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                {{-- <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/transaksi*') || Request::is('admin/pustakawan/laporan*') ? 'active' : '' }}"> --}}
-                <a href="#" class="nav-link nav-admin">
-                    <i class="fa fa-exchange-alt me-2"></i> Transaksi (TBD)
+                <a href="{{ route('admin.pustakawan.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/pustakawan/transaksi*') ? 'active' : '' }}">
+                    <i class="fa fa-exchange-alt me-2"></i> Transaksi
                 </a>
             </li>
 
@@ -109,9 +106,8 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                {{-- <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/transaksi*') || Request::is('admin/laboran/laporan*') ? 'active' : '' }}"> --}}
-                <a href="#" class="nav-link nav-admin">
-                    <i class="fa fa-exchange-alt me-2"></i> Transaksi (TBD)
+                <a href="{{ route('admin.laboran.transaksi.index') }}" class="nav-link nav-admin {{ Request::is('admin/laboran/transaksi*') ? 'active' : '' }}">
+                    <i class="fa fa-exchange-alt me-2"></i> Transaksi
                 </a>
             </li>
         
