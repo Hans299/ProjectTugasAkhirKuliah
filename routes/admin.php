@@ -35,7 +35,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmi
 });
 
 // == Grup PUSTAKAWAN ==
-Route::middleware(['auth', 'pustakawan'])->prefix('pustakawan')->name('pustakawan.')->group(function () {
+Route::middleware(['auth','pustakawan'])->prefix('pustakawan')->name('pustakawan.')->group(function () {
     Route::get('/dashboard', [PustakawanDash::class, 'index'])->name('dashboard');
 
     // CRUD Kelola Buku
