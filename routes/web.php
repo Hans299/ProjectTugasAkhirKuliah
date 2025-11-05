@@ -46,7 +46,7 @@ Auth::routes();
 
 // == Grup SISWA ==
 // Semua rute di sini dilindungi middleware 'auth' dan 'siswa'
-Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+// Route::middleware(['auth'])->prefix('siswa')->name('siswa.')->group(function () {
     
     // 1. Dashboard (Hub Utama)
     // Nama: siswa.dashboard
@@ -84,4 +84,4 @@ Route::middleware(['auth', 'siswa'])->prefix('siswa')->name('siswa.')->group(fun
     // Nama: siswa.pinjaman.kembalikan.store
     Route::post('/kembalikan/{transaksi}', [SiswaTransaksi::class, 'storePengembalian'])->name('pinjaman.kembalikan.store');
 
-});
+// });

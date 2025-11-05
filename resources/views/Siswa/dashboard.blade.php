@@ -32,7 +32,7 @@
             <div class="row">
                 {{-- Link ke Daftar Buku (sesuai rute kita) --}}
                 <div class="col-md-4 mb-4">
-                    <a href="{{ route('siswa.pinjaman.buku') }}" class="menu-card text-center">
+                    {{-- <a href="{{ route('siswa.pinjaman.buku') }}" class="menu-card text-center"> --}}
                         <div class="menu-card-icon"><i class="fas fa-book"></i></div>
                         <h2 class="menu-card-title">Perpustakaan</h2>
                     </a>
@@ -40,7 +40,7 @@
 
                 {{-- Link ke Daftar Alat (sesuai rute kita) --}}
                 <div class="col-md-4 mb-4">
-                    <a href="{{ route('siswa.pinjaman.alat') }}" class="menu-card text-center">
+                    {{-- <a href="{{ route('siswa.pinjaman.alat') }}" class="menu-card text-center"> --}}
                         <div class="menu-card-icon"><i class="fas fa-flask"></i></div>
                         <h2 class="menu-card-title">Laboratorium</h2>
                     </a>
@@ -48,7 +48,7 @@
                 
                 {{-- Link ke Riwayat (sesuai rute kita) --}}
                 <div class="col-md-4 mb-4">
-                    <a href="{{ route('siswa.pinjaman.riwayat') }}" class="menu-card text-center" style="background-color: #F8D442; color: #333;">
+                    {{-- <a href="{{ route('siswa.pinjaman.riwayat') }}" class="menu-card text-center" style="background-color: #F8D442; color: #333;"> --}}
                         <div class="menu-card-icon"><i class="fas fa-history"></i></div>
                         <h2 class="menu-card-title">Riwayat Saya</h2>
                     </a>
