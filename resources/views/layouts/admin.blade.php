@@ -15,6 +15,10 @@
 
     {{-- CSS Kustom untuk Admin Layout --}}
     <style>
+        html,body{
+            height: 100%;
+            margin: 0;
+        }
         body {
             background-color: #f4f7f6; /* Background abu-abu muda untuk area konten */
         }

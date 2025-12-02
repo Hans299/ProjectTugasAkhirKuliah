@@ -26,13 +26,13 @@
         --}}
         @if(Auth::user()->role->name == 'superadmin')
             <li class="nav-item mb-2">
-                <a href="{{ route('admin.superadmin.dashboard') }}" class="nav-link nav-admin {{ Request::is('admin/superadmin/dashboard*') ? 'active' : '' }}">
+                <a href="/admin/superadmin/dashboard" class="nav-link nav-admin {{ Request::is('admin/superadmin/dashboard*') ? 'active' : '' }}">
                     <i class="fa fa-th-large me-2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item mb-2">
                 {{-- Ini adalah link dari Tahap 6 (Kelola Akun) --}}
-                <a href="{{ route('admin.superadmin.users.index') }}" class="nav-link nav-admin {{ Request::is('admin/superadmin/users*') ? 'active' : '' }}">
+                <a href="{{ route('admin.superadmin.user.index') }}" class="nav-link nav-admin {{ Request::is('admin/superadmin/users*') ? 'active' : '' }}">
                     <i class="fa fa-users me-2"></i> Kelola Akun
                 </a>
             </li>

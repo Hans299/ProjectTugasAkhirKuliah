@@ -31,7 +31,8 @@ Route::middleware(['auth', 'superadmin'])->prefix('superadmin')->name('superadmi
     Route::get('/dashboard', [SuperadminDash::class, 'index'])->name('dashboard');
     
     // CRUD Kelola Akun
-    Route::resource('users', UserController::class);
+    // Route::resource('users', UserController::class);
+    Route::get('user',[UserController::class,'index'])->name('user.index');
 });
 
 // == Grup PUSTAKAWAN ==

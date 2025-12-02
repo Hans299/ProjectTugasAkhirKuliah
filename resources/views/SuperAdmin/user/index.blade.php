@@ -83,9 +83,9 @@
         <h2 class="page-title">Data User</h2>
         <div>
             {{-- Tombol Tambah mengarah ke route 'create' --}}
-            <a href="{{ route('superadmin.pengguna.create') }}" class="btn btn-tambah">
+            {{-- <a href="{{ route('superadmin.pengguna.create') }}" class="btn btn-tambah">
                 <i class="fa fa-plus me-2"></i> Tambah
-            </a>
+            </a> --}}
         </div>
     </div>
 
