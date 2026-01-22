@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Pustakawan;
 
+use App\Exports\TransaksiExportBuku;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaksi;
 use App\Models\Buku;
-use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransaksiController extends Controller
 {
@@ -16,20 +18,21 @@ class TransaksiController extends Controller
         // Ambil transaksi di mana 'itemable_type' adalah 'Buku'
         // Kita gunakan 'whereHasMorph' untuk memfilter berdasarkan relasi polimorfik
         $transaksis = Transaksi::where('itemable_type', Buku::class)
-                                ->with(['itemable', 'user']) // Ambil data buku dan data siswa
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+            ->with(['itemable', 'user']) // Ambil data buku dan data siswa
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         // Pisahkan berdasarkan status untuk ditampilkan di view
         $pending = $transaksis->where('status', 'pending');
         $dipinjam = $transaksis->where('status', 'dipinjam');
         $menunggu_konfirmasi = $transaksis->where('status', 'menunggu-konfirmasi');
-        $selesai = $transaksis->whereIn('status', ['selesai', 'ditolak']);
+        $selesai = $transaksis->whereIn('status', ['dikembalikan', 'ditolak']);
 
         return view('pustakawan.transaksi.index', compact(
-            'pending', 
-            'dipinjam', 
-            'menunggu_konfirmasi', 
+            'transaksis',
+            'pending',
+            'dipinjam',
+            'menunggu_konfirmasi',
             'selesai'
         ));
     }
@@ -40,22 +43,21 @@ class TransaksiController extends Controller
             DB::beginTransaction();
 
             $buku = $transaksi->itemable; // Ambil buku terkait
-
             // 1. Cek stok
             if ($buku->stok < 1) {
                 return back()->with('error', 'Stok buku habis. Transaksi tidak bisa disetujui.');
             }
 
             // 2. Kurangi stok
-            $buku->decrement('stok');
+            $buku->decrement('stok', $transaksi->jumlah);
 
             // 3. Update status transaksi
             $transaksi->status = 'dipinjam';
+            $transaksi->tanggal_pengembalian = now()->addDays(3);
             $transaksi->save();
 
             DB::commit();
             return back()->with('success', 'Peminjaman berhasil disetujui.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -85,38 +87,47 @@ class TransaksiController extends Controller
             DB::beginTransaction();
 
             // 1. Tambah stok (stok kembali)
-            $transaksi->itemable->increment('stok');
+            $transaksi->itemable->increment('stok', $transaksi->jumlah);
 
             // 2. Update status
-            $transaksi->status = 'selesai';
+            $transaksi->status = 'dikembalikan';
             $transaksi->save();
 
             DB::commit();
             return back()->with('success', 'Pengembalian berhasil dikonfirmasi.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
-    public function gagalKembali(Transaksi $transaksi)
+    public function gagalKembali(Request $request, Transaksi $transaksi)
     {
-        // Cek status
-        if ($transaksi->status != 'menunggu-konfirmasi') {
-            return back()->with('error', 'Status transaksi salah.');
-        }
+        $request->validate([
+            'catatan' => 'required|string',
+        ], [
+            'catatan.required' => 'Catatan penolakan wajib diisi.',
+        ]);
 
-        // 1. Hapus foto bukti
-        if ($transaksi->foto_pengembalian) {
-            Storage::delete($transaksi->foto_pengembalian);
-        }
+        $transaksi->update([
+            'status' => 'dipinjam',
+            'catatan' => $request->catatan,
+        ]);
 
-        // 2. Reset status
-        $transaksi->status = 'dipinjam';
-        $transaksi->foto_pengembalian = null;
-        $transaksi->tanggal_kembali = null;
-        $transaksi->save();
+        return back()->with('warning', 'Pengembalian berhasil ditolak dengan catatan.');
+    }
 
-        return back()->with('warning', 'Pengembalian ditolak. Siswa diminta upload ulang bukti.');
+    public function exportExcel(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+            'kategori' => 'nullable|string',
+            'status'     => 'nullable|string',
+        ]);
+
+        return Excel::download(
+            new TransaksiExportBuku($request->start_date, $request->end_date,   $request->status, $request->kategori),
+            'riwayat-peminjaman-buku-' . $request->kategori . '-' . $request->status . '_' . now()->format('Ymd_His') . '.xlsx'
+        );
     }
 }

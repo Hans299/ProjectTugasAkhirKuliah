@@ -3,38 +3,60 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
-    use AuthenticatesUsers;
-
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/dashboard';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function showLogin()
     {
-        $this->middleware('guest')->except('logout');
-        $this->middleware('auth')->only('logout');
+        if (Auth::check() && Auth::user()->role->name === 'siswa') {
+            return redirect()->route('siswa.dashboard');
+        }
+
+        if (Auth::check() && Auth::user()->role->name !== 'siswa') {
+            Auth::logout();
+        }
+
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials =  $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user(); // Ambil data user yang berhasil login
+            if ($user->status !== 'active') {
+                Auth::logout(); // Logout paksa
+                return back()->withErrors([
+                    'email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.',
+                ])->onlyInput('email');
+            } elseif ($user->role->name !== 'siswa') {
+                // Jika bukan siswa, logout dan tolak akses
+                Auth::logout(); // Logout paksa
+                return back()->withErrors([
+                    'email' => 'Akun ini bukan akun Siswa.',
+                ])->onlyInput('email');
+            } else {
+                $request->session()->regenerate(); // Regenerate session ID
+                // Redirect ke dashboard siswa
+                return redirect()->intended(route('siswa.dashboard'));
+            }
+        }
+
+        return redirect()->route('siswa.dashboard');
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect()->route('login');
     }
 }

@@ -16,9 +16,11 @@ class IsSiswa
      */
     public function handle(Request $request, Closure $next): Response
     {
-       if (Auth::check() && Auth::user()->role->name == 'siswa'){
-        return $next($request);
-    }
-    return redirect('/')->with('error', 'Akses ditolak.');
+        if (Auth::check() && Auth::user()->role->name === 'siswa') {
+            return $next($request);
+        }
+
+        Auth::logout();
+        return redirect('/login')->with('error', 'Akses ditolak.');
     }
 }

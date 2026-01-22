@@ -16,12 +16,13 @@ class IsLaboran
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->role->name == 'superadmin'){
-        return $next($request);
-    }
-       if (Auth::check() && Auth::user()->role->name == 'laboran'){
-        return $next($request);
-    }
-    return redirect('/')->with('error', 'Akses ditolak.');
+        if (Auth::check() && Auth::user()->role->name == 'superadmin') {
+            return $next($request);
+        }
+        if (Auth::check() && Auth::user()->role->name == 'laboran') {
+            return $next($request);
+        }
+        Auth::logout();
+        return redirect('/admin/login')->with('error', 'Akses ditolak.');
     }
 }

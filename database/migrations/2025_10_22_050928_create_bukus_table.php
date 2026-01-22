@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('bukus', function (Blueprint $table) {
             $table->id();
-            $table->string('judul buku');
+            $table->string('judul_buku');
             $table->string('penulis')->nullable();
             $table->string('penerbit')->nullable();
-            $table->year('tahun_terbit')->nullable();
+            $table->integer('tahun_terbit')->nullable();
             $table->string('isbn')->nullable()->unique();
             $table->integer('halaman')->nullable();
             $table->text('deskripsi')->nullable();

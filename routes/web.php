@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Auth;
 
 // Kontroler untuk Login Admin (Tamu)
 use App\Http\Controllers\Auth\AdminLoginController;
-
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Profile\ProfileController;
 // Kontroler untuk SISWA (BARU)
 use App\Http\Controllers\Siswa\DashboardController as SiswaDash;
 use App\Http\Controllers\Siswa\ItemController as SiswaItem;
@@ -25,17 +28,38 @@ use App\Http\Controllers\Siswa\TransaksiController as SiswaTransaksi;
 
 // 1. Rute Halaman Utama (Landing Page)
 Route::get('/', function () {
-    // Arahkan ke halaman login siswa secara default
     return redirect()->route('login');
 });
+
+Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+// Rute Lupa Password dengan OTP
+Route::get('/lupa-password', [ResetPasswordController::class, 'showEmailForm'])
+    ->name('password.request');
+
+Route::post('/lupa-password', [ResetPasswordController::class, 'sendOtp'])
+    ->name('password.otp.send');
+
+Route::get('/reset-password/{email}', [ResetPasswordController::class, 'showOtpForm'])
+    ->name('password.otp.form');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'resetWithOtp'])
+    ->name('password.otp.reset');
+
+
 
 // 2. Rute Login Admin (Masih Rute Tamu)
 Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login']);
 
-// 3. Rute Bawaan Laravel untuk Autentikasi SISWA
-// Ini akan otomatis membuat /login, /register, /logout untuk siswa
-Auth::routes();
+// 3. Rute Profil (Harus Login)
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
 
 
 /*
@@ -46,12 +70,13 @@ Auth::routes();
 
 // == Grup SISWA ==
 // Semua rute di sini dilindungi middleware 'auth' dan 'siswa'
-// Route::middleware(['auth'])->prefix('siswa')->name('siswa.')->group(function () {
-    
+Route::middleware(['auth', 'siswa'])->prefix('/siswa')->name('siswa.')->group(function () {
+
     // 1. Dashboard (Hub Utama)
     // Nama: siswa.dashboard
+    // Route::middleware(['auth', 'siswa'])->group(function () {
     Route::get('/dashboard', [SiswaDash::class, 'index'])->name('dashboard');
-    
+
     // 2. Halaman Katalog (Daftar Item)
     // Nama: siswa.pinjaman.buku
     Route::get('/buku', [SiswaItem::class, 'buku'])->name('pinjaman.buku');
@@ -77,11 +102,12 @@ Auth::routes();
     Route::post('/pinjam/store', [SiswaTransaksi::class, 'storePeminjaman'])->name('pinjaman.store');
 
     // 6. ALUR FORM KEMBALIKAN (DENGAN FOTO)
+    Route::get('/pengembalian', [SiswaTransaksi::class, 'showAksiPengembalian'])->name('pinjaman.pengembalian');
     // (A) Tampilkan Form Upload Foto
     // Nama: siswa.pinjaman.kembalikan.form
     Route::get('/kembalikan/{transaksi}', [SiswaTransaksi::class, 'showKembaliForm'])->name('pinjaman.kembalikan.form');
     // (B) Proses Form Upload Foto
     // Nama: siswa.pinjaman.kembalikan.store
     Route::post('/kembalikan/{transaksi}', [SiswaTransaksi::class, 'storePengembalian'])->name('pinjaman.kembalikan.store');
-
+});
 // });

@@ -16,9 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->morphs('itemable');
             $table->date('tanggal_peminjaman');
+            $table->integer('jumlah');
             $table->date('tanggal_pengembalian')->nullable();
-            $table->enum('status', ['pending', 'dipinjam', 'dikembalikan', 'ditolak'])->default('pending');
-            $table->text('catatan admin')->nullable();
+            $table->date('tanggal_pengembalian_aktual')->nullable();
+            $table->enum('status', ['pending', 'dipinjam', 'menunggu-konfirmasi', 'dikembalikan', 'ditolak'])->default('pending');
+            $table->string('denda')->nullable();
+            $table->string('keterlambatan')->nullable();
+            $table->text('catatan')->nullable();
+            $table->string('guru')->nullable();
             $table->timestamps();
         });
     }

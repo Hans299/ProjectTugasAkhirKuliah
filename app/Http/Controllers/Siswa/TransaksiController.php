@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Buku;
 use App\Models\AlatLab;
 use App\Models\Transaksi;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -34,55 +35,114 @@ class TransaksiController extends Controller
      */
     public function storePeminjaman(Request $request)
     {
-        $validated = $request->validate([
-            'item_id' => 'required|integer',
-            'item_type' => 'required|string|in:Buku,AlatLab',
+        $request->validate([
+            'item_id'   => 'required',
+            'item_type' => 'required|in:Buku,AlatLab',
+            'jumlah'    => 'required|integer|min:1',
+            'guru'      => 'nullable|string|max:255',
         ]);
 
-        $modelClass = $validated['item_type'] == 'Buku' ? Buku::class : AlatLab::class;
-        $item = $modelClass::find($validated['item_id']);
+        $model = $request->item_type === 'Buku'
+            ? \App\Models\Buku::where('isbn', $request->item_id)->firstOrFail()
+            : \App\Models\AlatLab::where('id_alat', $request->item_id)->firstOrFail();
 
-        if (!$item || $item->stok < 1) {
-            return back()->with('error', 'Item tidak ditemukan atau stok habis.');
+        if ($request->jumlah > $model->stok) {
+            return back()->with('error', 'Jumlah melebihi stok tersedia.');
         }
 
-        // Cek jika sudah pernah pinjam (pending/dipinjam)
-        $existingLoan = Transaksi::where('user_id', Auth::id())
-                                ->where('itemable_id', $item->id)
-                                ->where('itemable_type', $modelClass)
-                                ->whereIn('status', ['pending', 'dipinjam'])
-                                ->exists();
-        
-        if ($existingLoan) {
-            return redirect()->route('siswa.pinjaman.riwayat')->with('error', 'Anda sudah meminjam item ini.');
+        // cek apakah ada peminjaman pending yang sama
+        $existingTransaction = Transaksi::where('user_id', Auth::user()->id)
+            ->where('itemable_id', $model->getKey())
+            ->where('itemable_type', get_class($model))
+            ->whereIn('status', ['pending'])
+            ->first();
+
+        if ($existingTransaction) {
+            return redirect()
+                ->route('siswa.pinjaman.riwayat')
+                ->with(
+                    'error',
+                    'Selesaikan pengajuan yang sama untuk peminjaman item ' .
+                        $existingTransaction->itemable->judul_buku ?? $existingTransaction->itemable->nama_alat
+                );
         }
 
-        // Buat transaksi
+        // Cek apakah sudah dipinjam
         Transaksi::create([
-            'user_id' => Auth::id(),
-            'itemable_id' => $item->id,
-            'itemable_type' => $modelClass,
-            'tanggal_pinjam' => now(),
-            'status' => 'pending', // Status awal: Menunggu persetujuan
+            'user_id'       => Auth::user()->id,
+            'itemable_id'   => $model->getKey(),
+            'itemable_type' => get_class($model),
+            'jumlah'        => $request->jumlah,
+            'status'        => 'pending',
+            'guru'         => $request->guru,
+            'tanggal_peminjaman' => now(),
         ]);
 
-        // Arahkan ke halaman riwayat dengan pesan sukses
-        return redirect()->route('siswa.pinjaman.riwayat')->with('success', 'Permintaan peminjaman berhasil diajukan.');
+
+        return redirect()
+            ->route('siswa.pinjaman.riwayat')
+            ->with('success', 'Pengajuan peminjaman berhasil.');
     }
+
+    public function showAksiPengembalian(Request $request)
+    {
+        $filter = $request->get('filter'); // buku | alat | null
+
+        $transaksis = Transaksi::where('user_id', Auth::id())
+            ->where('status', 'dipinjam')
+            ->when($filter === 'buku', function ($q) {
+                $q->where('itemable_type', \App\Models\Buku::class);
+            })
+            ->when($filter === 'alat', function ($q) {
+                $q->where('itemable_type', \App\Models\AlatLab::class);
+            })
+            ->with('itemable')
+            ->orderBy('tanggal_pengembalian', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5)
+            ->withQueryString();
+        return view('siswa.pinjaman.pengembalian', compact('transaksis', 'filter'));
+    }
+
 
     /**
      * 3. Menampilkan RIWAYAT Peminjaman.
      */
-    public function riwayat()
+    public function riwayat(Request $request)
     {
+        $filter = $request->get('filter'); // buku | alat | null
+
         $transaksis = Transaksi::where('user_id', Auth::id())
-                                ->with('itemable') // Ambil data item (Buku/Alat)
-                                ->orderBy('created_at', 'desc')
-                                ->get();
-        
-        // Memanggil view: resources/views/siswa/pinjaman/riwayat.blade.php
-        return view('siswa.pinjaman.riwayat', compact('transaksis'));
+            ->when($filter === 'buku', function ($q) {
+                $q->where('itemable_type', \App\Models\Buku::class);
+            })
+            ->when($filter === 'alat', function ($q) {
+                $q->where('itemable_type', \App\Models\AlatLab::class);
+            })
+            ->with('itemable')
+            ->orderByRaw("
+            CASE
+                WHEN status = 'pending' THEN 0
+                ELSE 1
+            END")
+            ->orderByRaw("
+            CASE
+                WHEN status = 'menunggu-konfirmasi' THEN 0
+                ELSE 1
+            END")
+            ->orderByRaw("
+            CASE
+                WHEN status = 'dipinjam' THEN 0
+                ELSE 1
+            END")
+            ->orderBy('tanggal_pengembalian', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('siswa.pinjaman.riwayat', compact('transaksis', 'filter'));
     }
+
 
     /**
      * 4. Menampilkan FORM Pengembalian (dengan upload foto).
@@ -101,27 +161,39 @@ class TransaksiController extends Controller
     /**
      * 5. Memproses FORM Pengembalian (dengan upload foto).
      */
-    public function storePengembalian(Request $request, Transaksi $transaksi)
+
+    public function storePengembalian(Transaksi $transaksi)
     {
-        // Pastikan siswa ini yang punya transaksi
         if ($transaksi->user_id != Auth::id() || $transaksi->status != 'dipinjam') {
             abort(403, 'Aksi tidak diizinkan.');
         }
 
-        $validated = $request->validate([
-            'foto_pengembalian' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Wajib foto, maks 2MB
-        ]);
+        $hariTerlambat = 0;
 
-        // Upload foto
-        $path = $request->file('foto_pengembalian')->store('public/bukti_pengembalian');
+        if ($transaksi->tanggal_pengembalian) {
+            $jatuhTempo = Carbon::parse($transaksi->tanggal_pengembalian)->startOfDay();
+            $hariIni = now()->startOfDay();
 
-        // Update transaksi
+            if ($hariIni->gt($jatuhTempo)) {
+                $hariTerlambat = $jatuhTempo->diffInDays($hariIni);
+            }
+        }
+
+        if ($transaksi->itemable_type == Buku::class) {
+            $denda = $hariTerlambat * 3000;
+        } else {
+            $denda = null;
+        }
+
         $transaksi->update([
-            'status' => 'menunggu-konfirmasi', // Status baru: admin harus cek foto
-            'foto_pengembalian' => $path, // Simpan path foto
-            'tanggal_kembali' => now(),
+            'status' => 'menunggu-konfirmasi',
+            'tanggal_pengembalian_aktual' => now(),
+            'keterlambatan' => $hariTerlambat,
+            'denda' => $denda,
         ]);
 
-        return redirect()->route('siswa.pinjaman.riwayat')->with('success', 'Pengajuan pengembalian berhasil, menunggu konfirmasi admin.');
+        return redirect()
+            ->route('siswa.pinjaman.pengembalian')
+            ->with('success', 'Pengembalian berhasil dikonfirmasi.');
     }
 }

@@ -15,6 +15,21 @@ class Transaksi extends Model
      */
     protected $guarded = ['id']; // 'guarded' adalah kebalikan dari 'fillable'. Ini bagus.
 
+    protected $fillable = [
+        'user_id',
+        'itemable_id',
+        'itemable_type',
+        'tanggal_peminjaman',
+        'tanggal_pengembalian',
+        'tanggal_pengembalian_aktual',
+        'jumlah',
+        'status',
+        'keterlambatan',
+        'denda',
+        'catatan',
+        'guru',
+    ];
+
     /**
      * Get the attributes that should be cast.
      * (Ambil atribut yang harus di-cast / diubah tipenya)
@@ -25,8 +40,8 @@ class Transaksi extends Model
     {
         return [
             // Ubah kolom-kolom ini menjadi objek Carbon (date)
-            'tanggal_pinjam' => 'date',
-            'tanggal_kembali' => 'date',
+            'tanggal_peminjaman' => 'date',
+            'tanggal_pengembalian' => 'date',
             'tanggal_pengembalian_aktual' => 'date',
         ];
     }

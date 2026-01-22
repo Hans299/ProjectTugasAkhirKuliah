@@ -22,6 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'profile_photo_path',
+        'kelas',
+        'status',
     ];
 
     /**
@@ -52,10 +55,10 @@ class User extends Authenticatable
     }
     public function transaksis()
     {
-        return $this->hasMany(Transaksi::class,'user_id');
+        return $this->hasMany(Transaksi::class, 'user_id');
     }
     public function approvedTransaksis()
     {
-        return $this->hasMany(Transaksi::class,'admin_id');
+        return $this->hasMany(Transaksi::class, 'admin_id');
     }
 }

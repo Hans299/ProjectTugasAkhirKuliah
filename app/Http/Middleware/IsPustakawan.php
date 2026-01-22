@@ -16,12 +16,13 @@ class IsPustakawan
      */
     public function handle(Request $request, Closure $next): Response
     {
-    if (Auth::check() && Auth::user()->role->name == 'superadmin'){
-        return $next($request);
-    }
-     if (Auth::check() && Auth::user()->role->name == 'pustakawan'){
-        return $next($request);
-    }
-    return redirect('/404')->with('error', 'Akses ditolak.');
+        if (Auth::check() && Auth::user()->role->name == 'superadmin') {
+            return $next($request);
+        }
+        if (Auth::check() && Auth::user()->role->name == 'pustakawan') {
+            return $next($request);
+        }
+        Auth::logout();
+        return redirect('/admin/login')->with('error', 'Akses ditolak.');
     }
 }

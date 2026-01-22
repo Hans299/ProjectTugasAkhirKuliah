@@ -3,47 +3,74 @@
 @section('title', 'Dashboard Laboran')
 
 @push('styles')
-{{-- CSS khusus untuk kartu statistik --}}
-<style>
-    .stat-card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .stat-card .card-body {
-        display: flex;
-        align-items: center;
-    }
-    .stat-card .icon-circle {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-right: 1.5rem;
-    }
-    .text-primary { color: #3B82F6 !important; }
-    .bg-primary-light { background-color: #DBEAFE; }
-    .text-success { color: #10B981 !important; }
-    .bg-success-light { background-color: #D1FAE5; }
-    .text-warning { color: #F59E0B !important; }
-    .bg-warning-light { background-color: #FEF3C7; }
-    .text-danger { color: #EF4444 !important; }
-    .bg-danger-light { background-color: #FEE2E2; }
+    {{-- CSS khusus untuk kartu statistik --}}
+    <style>
+        .stat-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
 
-    .stat-card h5 {
-        font-size: 1rem;
-        font-weight: 500;
-        color: #6B7280;
-    }
-    .stat-card .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1F2937;
-    }
-</style>
+        .stat-card .card-body {
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-card .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1.5rem;
+        }
+
+        .text-primary {
+            color: #3B82F6 !important;
+        }
+
+        .bg-primary-light {
+            background-color: #DBEAFE;
+        }
+
+        .text-success {
+            color: #10B981 !important;
+        }
+
+        .bg-success-light {
+            background-color: #D1FAE5;
+        }
+
+        .text-warning {
+            color: #F59E0B !important;
+        }
+
+        .bg-warning-light {
+            background-color: #FEF3C7;
+        }
+
+        .text-danger {
+            color: #EF4444 !important;
+        }
+
+        .bg-danger-light {
+            background-color: #FEE2E2;
+        }
+
+        .stat-card h5 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6B7280;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -131,37 +158,46 @@
 @endsection
 
 @push('scripts')
-{{-- Script untuk menginisialisasi Grafik --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('peminjamanChart').getContext('2d');
-        
-        // Data ini idealnya Anda kirim dari Controller
-        const dataPeminjaman = [12, 19, 3, 5, 2, 3, 9];
-        const labels = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    {{-- Script untuk menginisialisasi Grafik --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('peminjamanChart').getContext('2d');
 
-        const myChart = new Chart(ctx, {
-            type: 'line', // Tipe grafik
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Jumlah Peminjaman',
-                    data: dataPeminjaman,
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+            const labels = @json($labels);
+            const dataPeminjaman = @json($data);
+            const total7Hari = @json($total7Hari);
+
+            // Gabungkan label + total
+            const labelsWithTotal = labels.map((label, index) => {
+                return `${label} (${dataPeminjaman[index]})`;
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelsWithTotal,
+                    datasets: [{
+                        label: `Total Peminjaman 7 Hari Terakhir: ${total7Hari}`,
+                        data: dataPeminjaman,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
                     }
                 }
-            }
+            });
         });
-    });
-</script>
+    </script>
 @endpush

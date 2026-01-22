@@ -5,7 +5,9 @@
                 <thead>
                     <tr>
                         <th>Nama Siswa</th>
+                        <th>Guru Pengajar</th>
                         <th>Nama Alat</th>
+                        <th>Jumlah Dipinjam</th>
                         <th>Tgl. Pengajuan</th>
                         <th>Stok Tersisa</th>
                         <th>Aksi</th>
@@ -13,38 +15,42 @@
                 </thead>
                 <tbody>
                     @forelse ($transaksis as $trx)
-                    <tr>
-                        <td>{{ $trx->user->name }}</td>
-                        <td>{{ $trx->itemable->nama }}</td>
-                        <td>{{ $trx->tanggal_pinjam->format('d M Y') }}</td>
-                        <td>
-                            <span class="badge {{ $trx->itemable->stok > 0 ? 'bg-success' : 'bg-danger' }}">
-                                {{ $trx->itemable->stok }}
-                            </span>
-                        </td>
-                        <td class="action-buttons">
-                            {{-- TOMBOL SETUJUI --}}
-                            <form action="{{ route('admin.laboran.transaksi.setujui', $trx) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-success btn-sm" title="Setujui"
-                                    {{ $trx->itemable->stok < 1 ? 'disabled' : '' }}>
-                                    <i class="fa fa-check"></i>
-                                </button>
-                            </form>
+                        <tr>
+                            <td>{{ $trx->user->name }}</td>
+                            <td>{{ $trx->guru ?? '-' }}</td>
+                            <td>{{ $trx->itemable->nama_alat }}</td>
+                            <td>{{ $trx->jumlah }}</td>
+                            <td>{{ $trx->tanggal_peminjaman->format('d M Y') }}</td>
+                            <td>
+                                <span class="badge {{ $trx->itemable->stok > 0 ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $trx->itemable->stok }}
+                                </span>
+                            </td>
+                            <td class="action-buttons">
+                                {{-- TOMBOL SETUJUI --}}
+                                <form action="{{ route('admin.laboran.transaksi.setujui', $trx) }}" method="POST"
+                                    class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-sm" title="Setujui"
+                                        {{ $trx->itemable->stok < 1 ? 'disabled' : '' }}>
+                                        <i class="fa fa-check"></i>
+                                    </button>
+                                </form>
 
-                            {{-- TOMBOL TOLAK --}}
-                            <form action="{{ route('admin.laboran.transaksi.tolak', $trx) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-danger btn-sm" title="Tolak">
-                                    <i class="fa fa-times"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+                                {{-- TOMBOL TOLAK --}}
+                                <form action="{{ route('admin.laboran.transaksi.tolak', $trx) }}" method="POST"
+                                    class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Tolak">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="5" class="text-center">Tidak ada permintaan pending.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="6" class="text-center">Tidak ada permintaan pending.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('kelas')->nullable();
             $table->string('profile_photo_path')->nullable();
             $table->rememberToken();
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->timestamps();
         });
 

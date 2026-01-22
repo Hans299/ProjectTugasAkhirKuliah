@@ -2,36 +2,51 @@
 
 namespace App\Http\Controllers\Laboran;
 
+use App\Exports\TransaksiExportLab;
 use App\Http\Controllers\Controller;
 use App\Models\Transaksi;
 use App\Models\AlatLab; // <-- DIUBAH
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransaksiController extends Controller
 {
     /**
      * Menampilkan halaman daftar transaksi
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil transaksi di mana 'itemable_type' adalah 'AlatLab'
-        $transaksis = Transaksi::where('itemable_type', AlatLab::class) // <-- DIUBAH
-                                ->with(['itemable', 'user'])
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+        $search = $request->query('search');
 
-        $pending = $transaksis->where('status', 'pending');
-        $dipinjam = $transaksis->where('status', 'dipinjam');
-        $menunggu_konfirmasi = $transaksis->where('status', 'menunggu-konfirmasi');
-        $selesai = $transaksis->whereIn('status', ['selesai', 'ditolak']);
+        // QUERY UTAMA
+        $transaksis = Transaksi::where('itemable_type', AlatLab::class)
+            ->with(['itemable', 'user'])
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('user', function ($u) use ($search) {
+                    $u->where('name', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('itemable', function ($i) use ($search) {
+                        $i->where('nama_alat', 'like', "%{$search}%");
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
-        // Arahkan ke view laboran
-        return view('laboran.transaksi.index', compact( // <-- DIUBAH
-            'pending', 
-            'dipinjam', 
-            'menunggu_konfirmasi', 
-            'selesai'
+        // FILTER STATUS (DARI COLLECTION)
+        $pending = $transaksis->getCollection()->where('status', 'pending');
+        $dipinjam = $transaksis->getCollection()->where('status', 'dipinjam');
+        $menunggu_konfirmasi = $transaksis->getCollection()->where('status', 'menunggu-konfirmasi');
+        $selesai = $transaksis->getCollection()->whereIn('status', ['dikembalikan', 'ditolak']);
+
+        return view('laboran.transaksi.index', compact(
+            'transaksis',
+            'pending',
+            'dipinjam',
+            'menunggu_konfirmasi',
+            'selesai',
+            'search'
         ));
     }
 
@@ -51,15 +66,15 @@ class TransaksiController extends Controller
             }
 
             // 2. Kurangi stok
-            $alat->decrement('stok'); // <-- DIUBAH
+            $alat->decrement('stok', $transaksi->jumlah); // <-- DIUBAH
 
             // 3. Update status transaksi
             $transaksi->status = 'dipinjam';
+            $transaksi->tanggal_pengembalian = now()->addDays(7);
             $transaksi->save();
 
             DB::commit();
             return back()->with('success', 'Peminjaman berhasil disetujui.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -94,15 +109,14 @@ class TransaksiController extends Controller
             DB::beginTransaction();
 
             // 1. Tambah stok (stok kembali)
-            $transaksi->itemable->increment('stok');
+            $transaksi->itemable->increment('stok', $transaksi->jumlah);
 
             // 2. Update status
-            $transaksi->status = 'selesai';
+            $transaksi->status = 'dikembalikan';
             $transaksi->save();
 
             DB::commit();
             return back()->with('success', 'Pengembalian berhasil dikonfirmasi.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -112,21 +126,33 @@ class TransaksiController extends Controller
     /**
      * Menolak bukti pengembalian (status: menunggu-konfirmasi -> dipinjam)
      */
-    public function gagalKembali(Transaksi $transaksi)
+    public function gagalKembali(Transaksi $transaksi, Request $request)
     {
-        if ($transaksi->status != 'menunggu-konfirmasi') {
-            return back()->with('error', 'Status transaksi salah.');
-        }
+        $request->validate([
+            'catatan' => 'required|string',
+        ], [
+            'catatan.required' => 'Catatan penolakan wajib diisi.',
+        ]);
 
-        if ($transaksi->foto_pengembalian) {
-            Storage::delete($transaksi->foto_pengembalian);
-        }
+        $transaksi->update([
+            'status' => 'dipinjam',
+            'catatan' => $request->catatan,
+        ]);
 
-        $transaksi->status = 'dipinjam';
-        $transaksi->foto_pengembalian = null;
-        $transaksi->tanggal_kembali = null;
-        $transaksi->save();
+        return back()->with('warning', 'Pengembalian berhasil ditolak dengan catatan');
+    }
 
-        return back()->with('warning', 'Pengembalian ditolak. Siswa diminta upload ulang bukti.');
+    public function exportExcel(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+            'status'     => 'nullable|string',
+        ]);
+
+        return Excel::download(
+            new TransaksiExportLab($request->start_date, $request->end_date,   $request->status,),
+            'riwayat-peminjaman-lab-' . $request->status . '_' . now()->format('Ymd_His') . '.xlsx'
+        );
     }
 }

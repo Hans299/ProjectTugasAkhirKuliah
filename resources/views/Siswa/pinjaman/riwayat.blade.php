@@ -1,88 +1,145 @@
-@extends('layouts.tamu') 
+@extends('layouts.siswa')
+
 @section('title', 'Riwayat Peminjaman')
 
-@push('styles')
-<style>
-    .table-custom { background-color: white; border-radius: 10px; }
-    .table-custom thead th { background-color: #2A5A3A; color: white; vertical-align: middle; }
-    .table-custom tbody td { vertical-align: middle; }
-    .status-pending { background-color: #ffc107; color: #333; }
-    .status-dipinjam { background-color: #0d6efd; color: white; }
-    .status-selesai { background-color: #198754; color: white; }
-    .status-ditolak { background-color: #dc3545; color: white; }
-    .status-menunggu-konfirmasi { background-color: #0dcaf0; color: #333; }
-    .badge-status { padding: 0.5em 0.75em; border-radius: 6px; font-weight: 600; font-size: 0.9em; }
-</style>
-@endpush
-
 @section('content')
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <h1 class="display-4 fw-bold" style="color: #1D3A1F;"><i class="fas fa-history me-3"></i> Riwayat Saya</h1>
-        <a href="{{ route('siswa.dashboard') }}" class="btn btn-outline-success">Kembali ke Dashboard</a>
-    </div>
-    
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
+    <div class="container py-4">
 
-    <div class="table-responsive table-custom shadow-sm">
-        <table class="table table-hover align-middle mb-0">
-            <thead>
-                <tr>
-                    <th scope="col">Nama Item</th>
-                    <th scope="col">Tgl. Pinjam</th>
-                    <th scope="col">Tgl. Kembali</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
+        <h4 class="fw-bold mb-4">
+            <i class="fa fa-history me-2"></i> Riwayat Peminjaman
+        </h4>
+
+        {{-- ALERT --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                {{ session('success') }}
+                <button class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                {{ session('error') }}
+                <button class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="{{ route('siswa.pinjaman.riwayat') }}" class="btn btn-sm {{ !$filter ? 'btn-primary' : 'btn-info' }}">
+                Semua
+            </a>
+
+            <a href="{{ route('siswa.pinjaman.riwayat', ['filter' => 'buku']) }}"
+                class="btn btn-sm {{ $filter === 'buku' ? 'btn-primary' : 'btn-info' }}">
+                <i class="fa fa-book me-1"></i> Buku
+            </a>
+
+            <a href="{{ route('siswa.pinjaman.riwayat', ['filter' => 'alat']) }}"
+                class="btn btn-sm {{ $filter === 'alat' ? 'btn-primary' : 'btn-info' }}">
+                <i class="fa fa-flask me-1"></i> Alat Lab
+            </a>
+        </div>
+        {{-- DATA --}}
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+
                 @forelse ($transaksis as $trx)
-                    <tr>
-                        <td>
-                            {{ $trx->itemable->judul ?? $trx->itemable->nama }}
-                            <small class="d-block text-muted">
-                                Tipe: {{ $trx->itemable_type == 'App\Models\Buku' ? 'Buku' : 'Alat Lab' }}
-                            </small>
-                        </td>
-                        <td>{{ $trx->tanggal_pinjam->format('d M Y') }}</td>
-                        <td>
-                            {{ $trx->tanggal_kembali ? $trx->tanggal_kembali->format('d M Y') : '-' }}
-                        </td>
-                        <td>
-                            <span class="badge-status 
-                                @if($trx->status == 'pending') status-pending
-                                @elseif($trx->status == 'dipinjam') status-dipinjam
-                                @elseif($trx->status == 'menunggu-konfirmasi') status-menunggu-konfirmasi
-                                @elseif($trx->status == 'selesai') status-selesai
-                                @elseif($trx->status == 'ditolak') status-ditolak
-                                @endif">
-                                {{ ucfirst(str_replace('-', ' ', $trx->status)) }}
-                            </span>
-                        </td>
-                        <td>
-                            @if ($trx->status == 'dipinjam')
-                                {{-- Status DIPINJAM, tampilkan tombol --}}
-                                <a href="{{ route('siswa.pinjaman.kembalikan.form', $trx) }}" 
-                                   class="btn btn-warning btn-sm">
-                                   <i class="fas fa-undo"></i> Kembalikan
-                                </a>
+                    @php
+                        $item = $trx->itemable;
+                        $type = class_basename($trx->itemable_type); // Buku / AlatLab
+                    @endphp
+
+                    <div class="d-flex flex-column flex-md-row gap-3 border-5 border-bottom py-3">
+
+                        {{-- ICON / GAMBAR --}}
+                        <div class="text-center" style="width:120px;">
+                            @if ($item && $item->gambar)
+                                <img src="{{ asset('storage/' . $item->gambar) }}" class="img-fluid rounded"
+                                    style="max-height:90px; object-fit:contain;">
                             @else
-                                -
+                                <i
+                                    class="fa fa-{{ $type === 'Buku' ? 'book text-primary' : 'flask text-success' }} fa-3x"></i>
                             @endif
-                        </td>
-                    </tr>
+                        </div>
+
+                        {{-- INFO --}}
+                        <div class="flex-grow-1">
+
+                            <h6 class="fw-bold mb-1">
+                                {{ $type === 'Buku' ? $item->judul_buku : $item->nama_alat }}
+                            </h6>
+
+                            <div class="small text-muted mb-1">
+                                {{ $type === 'Buku' ? 'ISBN' : 'ID Alat' }} :
+                                {{ $type === 'Buku' ? $item->isbn : $item->id_alat }}
+                            </div>
+
+                            <div class="small text-muted mb-1">
+                                Tanggal Pinjam :
+                                {{ \Carbon\Carbon::parse($trx->tanggal_pinjam)->format('d M Y') }}
+                            </div>
+
+                            <div class="small text-muted">
+                                Jumlah Dipinjam :
+                                {{ $trx->jumlah }}
+                            </div>
+                            @if ($item->kategori != 'Buku Umum')
+                                <div class="small text-muted">
+                                    Guru Pengajar :
+                                    {{ $trx->guru ?? '-' }}
+                                </div>
+                            @endif
+                            @if ($trx->catatan)
+                                <div class="mt-2 p-2 bg-warning bg-opacity-25 rounded">
+                                    <strong>Catatan:</strong>
+                                    <p class="mb-0">{{ $trx->catatan }}</p>
+                                </div>
+                            @endif
+                            @if ($trx->status !== 'dikembalikan')
+                                @if ($trx->tanggal_pengembalian)
+                                    <div class="badge bg-danger mt-2 p-2">
+                                        Harus dikembalikan Pada :
+                                        {{ $trx->tanggal_pengembalian ? \Carbon\Carbon::parse($trx->tanggal_pengembalian)->format('d M Y') : '-' }}
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+
+                        {{-- STATUS --}}
+                        <div class="text-md-end">
+                            @php
+                                $statusClass = match ($trx->status) {
+                                    'pending' => 'warning',
+                                    'dipinjam' => 'primary',
+                                    'dikembalikan' => 'success',
+                                    'ditolak' => 'danger',
+                                    default => 'secondary',
+                                };
+                            @endphp
+
+                            <span class="badge bg-{{ $statusClass }} px-3 py-2">
+                                {{ ucfirst($trx->status === 'menunggu-konfirmasi' ? 'Menunggu Konfirmasi Pengembalian' : $trx->status) }}
+                            </span>
+                        </div>
+                    </div>
+
                 @empty
-                    <tr>
-                        <td colspan="5" class="text-center p-4">Anda belum memiliki riwayat peminjaman.</td>
-                    </tr>
+                    <div class="text-center py-5 text-muted">
+                        <i class="fa fa-box-open fa-3x mb-3"></i>
+                        <p>Belum ada riwayat peminjaman.</p>
+                    </div>
                 @endforelse
-            </tbody>
-        </table>
+
+            </div>
+        </div>
+        <div class="mt-4 d-flex justify-content-end" style="color: #fff !important;">
+            {{ $transaksis->links('pagination::bootstrap-5') }}
+        </div>
+
+        {{-- BACK --}}
+        <a href="{{ route('siswa.dashboard') }}" class="btn btn-warning mt-4">
+            <i class="fa fa-arrow-left me-1"></i> Kembali ke Dashboard
+        </a>
+
     </div>
-</div>
 @endsection

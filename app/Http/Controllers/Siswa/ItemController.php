@@ -14,7 +14,7 @@ class ItemController extends Controller
     public function buku()
     {
         $bukus = Buku::where('stok', '>', 0)->orderBy('judul')->paginate(12);
-        
+
         // Memanggil view: resources/views/siswa/pinjaman/index.blade.php
         return view('siswa.pinjaman.index', compact('bukus'));
     }
@@ -25,7 +25,7 @@ class ItemController extends Controller
     public function alat()
     {
         $alats = AlatLab::where('stok', '>', 0)->orderBy('nama')->paginate(12);
-        
+
         // Memanggil view: resources/views/siswa/pinjaman/index.blade.php
         return view('siswa.pinjaman.index', compact('alats'));
     }
@@ -33,18 +33,26 @@ class ItemController extends Controller
     /**
      * Menampilkan halaman DETAIL BUKU
      */
-    public function showBuku(Buku $buku)
+    public function showBuku($buku)
     {
-        // Memanggil view: resources/views/siswa/item/show.blade.php
-        return view('siswa.item.show', compact('buku'));
+        $item = Buku::where('isbn', $buku)->firstOrFail();
+
+        return view('siswa.item.show', [
+            'item' => $item,
+            'type' => 'buku',
+        ]);
     }
-    
+
     /**
      * Menampilkan halaman DETAIL ALAT
      */
-    public function showAlat(AlatLab $alat)
+    public function showAlat($alat)
     {
-        // Memanggil view: resources/views/siswa/item/show.blade.php
-        return view('siswa.item.show', compact('alat'));
+        $item = AlatLab::where('id_alat', $alat)->firstOrFail();
+
+        return view('siswa.item.show', [
+            'item' => $item,
+            'type' => 'alat',
+        ]);
     }
 }

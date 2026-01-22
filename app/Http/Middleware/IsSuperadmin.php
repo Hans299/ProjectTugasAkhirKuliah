@@ -16,9 +16,10 @@ class IsSuperadmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-     if (Auth::check() && Auth::user()->role->name == 'superadmin') {
-        return $next($request);
-    }
-    return redirect('/')->with('error', 'Akses ditolak.');
+        if (Auth::check() && Auth::user()->role->name == 'superadmin') {
+            return $next($request);
+        }
+        Auth::logout();
+        return redirect('/admin/login')->with('error', 'Akses ditolak.');
     }
 }
