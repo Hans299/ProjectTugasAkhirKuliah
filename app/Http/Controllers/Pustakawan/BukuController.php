@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Pustakawan;
+namespace App\Http\Controllers\pustakawan;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -35,7 +35,7 @@ class BukuController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('Pustakawan.buku.index', compact('bukus'));
+        return view('pustakawan.buku.index', compact('bukus'));
     }
 
     /**
@@ -43,7 +43,7 @@ class BukuController extends Controller
      */
     public function create()
     {
-        return view('Pustakawan.buku.create');
+        return view('pustakawan.buku.create');
     }
 
     /**

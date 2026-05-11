@@ -5,13 +5,17 @@
     </button>
     {{-- Logo --}}
     <a href="{{ route('siswa.dashboard') }}"
-        class="d-flex justify-content-center align-items-center mb-4 text-decoration-none">
-        <a href="#" class="d-flex justify-content-center align-items-center mb-4 text-white text-decoration-none">
-            <div class="d-flex align-items-center justify-content-center"
-                style="width: auto; height: auto; border-radius: 10px;">
-                <img width="80px" src="{{ asset('/logo.png') }}" />
-            </div>
-        </a>
+        class="d-flex flex-column justify-content-center align-items-center mb-4 text-white text-decoration-none text-center">
+
+        <div class="d-flex align-items-center justify-content-center mb-2"
+            style="width: auto; height: auto; border-radius: 10px;">
+            <img width="80" src="{{ asset('/logo.png') }}" alt="Logo">
+        </div>
+
+        <div class="fw-bold">
+            SMP NEGERI 6 <br> Bandar Lampung
+        </div>
+
     </a>
 
     {{-- Menu Navigasi --}}

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Laboran;
+namespace App\Http\Controllers\laboran;
 
 use App\Http\Controllers\Controller;
 use App\Models\AlatLab;
@@ -32,7 +32,7 @@ class AlatLabController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('Laboran.alat.index', compact('alats'));
+        return view('laboran.alat.index', compact('alats'));
     }
 
     /**
@@ -40,7 +40,7 @@ class AlatLabController extends Controller
      */
     public function create()
     {
-        return view('Laboran.alat.create');
+        return view('laboran.alat.create');
     }
 
     /**
@@ -99,7 +99,7 @@ class AlatLabController extends Controller
      */
     public function show(AlatLab $alat)
     {
-        return view('Laboran.alat.show', compact('alat'));
+        return view('laboran.alat.show', compact('alat'));
     }
 
     /**

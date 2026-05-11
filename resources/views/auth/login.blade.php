@@ -6,6 +6,8 @@
 
 {{-- Menambahkan CSS kustom HANYA untuk halaman ini --}}
 @push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         body,
         html {
@@ -147,7 +149,9 @@
                                     <input type="password" class="form-control rounded-start-3" id="password"
                                         name="password" placeholder="Masukan Password" required>
                                     {{-- Tombol untuk toggle password --}}
-                                    <span class="input-group-text rounded-end-3" id="togglePassword">👁️</span>
+                                    <span class="input-group-text rounded-end-3" id="togglePassword">
+                                        <i class="fa fa-eye" id="iconPassword"></i>
+                                    </span>
                                 </div>
                             </div>
 
@@ -179,7 +183,15 @@
                 togglePassword.addEventListener('click', function() {
                     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                     passwordInput.setAttribute('type', type);
-                    this.textContent = type === 'password' ? '👁️' : '🙈';
+                    const icon = document.getElementById('iconPassword');
+
+                    if (type === 'password') {
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    } else {
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    }
                 });
             }
         });

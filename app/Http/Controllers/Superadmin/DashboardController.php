@@ -60,7 +60,7 @@ class DashboardController extends Controller
             );
         }
 
-        return view('SuperAdmin.dashboard', compact(
+        return view('superadmin.dashboard', compact(
             'jumlahAdmin',
             'jumlahUser',
             'jumlahBuku',
